@@ -31,7 +31,7 @@ RUN pip install --no-cache-dir 'numpy<2'
 RUN pip install --no-cache-dir \
     packaging ninja psutil setuptools wheel pybind11
 
-RUN printf "torch==2.0.1\ntorchvision==0.15.2\nnumpy<2\n" > $HOME/constraints.txt
+RUN printf "torch==2.0.1\ntorchvision==0.15.2\nnumpy<2\ntransformers==4.39.3\ntokenizers<0.19\nhuggingface-hub<1.0\n" > $HOME/constraints.txt
 
 RUN pip install --no-cache-dir --no-build-isolation --constraint $HOME/constraints.txt \
     --retries 5 --timeout 120 \
