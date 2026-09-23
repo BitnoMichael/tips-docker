@@ -3,6 +3,7 @@ FROM nvidia/cuda:11.8.0-devel-ubuntu22.04
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y \
     python3.10 python3-pip git wget ninja-build \
+    libgl1 libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
 RUN useradd -m -u 1000 user
@@ -43,6 +44,7 @@ RUN pip install --no-cache-dir --no-build-isolation --constraint $HOME/constrain
 
 RUN python3 -c "import torch, mamba_ssm, causal_conv1d; assert torch.__version__.startswith('2.0.1'), torch.__version__; print('OK:', torch.__version__)"
 
-RUN cd $HOME/TIPs && pip install --no-cache-dir -e .
+# ВАЖНО: --constraint и здесь, чтобы TIPs не утянул свежий numpy
+RUN pip install --no-cache-dir --constraint $HOME/constraints.txt -e $HOME/TIPs
 
-CMD ["python3", "$HOME/TIPs/TIPs.py", "/data"]
+CMD ["python3", "$HOME/TIPs/TIPs.py", "/home/user/data"]
