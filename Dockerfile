@@ -31,14 +31,20 @@ RUN pip install --no-cache-dir 'numpy<2'
 RUN pip install --no-cache-dir \
     packaging ninja psutil setuptools wheel pybind11
 
-RUN pip install --no-cache-dir --no-build-isolation --retries 5 --timeout 120 \
-    causal-conv1d>=1.2.0
+# Запрещаем pip трогать torch 2.0.1 при установке Mamba
+RUN printf "torch==2.0.1\ntorchvision==0.15.2\nnumpy<2\n" > $HOME/constraints.txt
 
-RUN pip install --no-cache-dir --no-build-isolation --retries 5 --timeout 120 \
-    mamba-ssm
+RUN pip install --no-cache-dir --no-build-isolation --constraint $HOME/constraints.txt \
+    --retries 5 --timeout 120 \
+    "causal-conv1d==1.2.0"
 
-RUN python -c "import torch, mamba_ssm, causal_conv1d; print('OK:', torch.__version__)"
+RUN pip install --no-cache-dir --no-build-isolation --constraint $HOME/constraints.txt \
+    --retries 5 --timeout 120 \
+    "mamba-ssm==1.2.0"
+
+# Проверяем, что torch остался правильный
+RUN python3 -c "import torch, mamba_ssm, causal_conv1d; assert torch.__version__.startswith('2.0.1'), torch.__version__; print('OK:', torch.__version__)"
 
 RUN cd $HOME/TIPs && pip install --no-cache-dir -e .
 
-CMD ["python", "$HOME/TIPs/TIPs.py", "/data"]
+CMD ["python3", "$HOME/TIPs/TIPs.py", "/data"]
